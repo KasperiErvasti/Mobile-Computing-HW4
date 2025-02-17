@@ -12,6 +12,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.mobilecomputinghw4.sensor.createNotificationChannel
 import kotlinx.serialization.Serializable
 import java.io.File
 
@@ -29,6 +30,8 @@ class MainActivity : ComponentActivity() {
             }
 
             AppNavigation(modifier = Modifier.systemBarsPadding())
+
+            createNotificationChannel(context)
         }
     }
 }

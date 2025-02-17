@@ -1,5 +1,14 @@
 package com.example.mobilecomputinghw4
 
+import android.content.ContentResolver
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorManager
+import android.net.Uri
+import android.util.Log
+import android.view.View
+import android.widget.Button
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,6 +26,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,19 +49,50 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import java.io.File
 
+
 @Composable
 fun ProfileScreen(
     onNavigateToChat: () -> Unit,
 ) {
+    lateinit var sensorManager: SensorManager
+
     val context = LocalContext.current
     val resolver = context.contentResolver
 
     val file = File(context.filesDir, "profile_picture")
     val usernameFile = File(context.filesDir, "username")
 
+
+//    sensorManager = context.getSystemService(SensorManager::class.java)!!
+//    val deviceSensors: List<Sensor> = sensorManager.getSensorList(Sensor.TYPE_ALL)
+//
+//    if (sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null) {
+//        // Success! There's a magnetometer.
+//    } else {
+//        // Failure! No magnetometer.
+//    }
+//
+//    var i = 0
+//    var string = "ProfileScreen: "
+//    for (x in deviceSensors) {
+//        string += "\n${x.name}"
+//        i++
+//    }
+//
+//    Log.d(
+//        "MY_TAG", string
+//    )
+//
+//    Log.d(
+//        "MY_TAG", "ProfileScreen: " +
+//
+//                "\nabsolute:  ${file.absolutePath}" +
+//                "\nfile:  $file"
+//    )
+
     var filePath by remember {
         mutableStateOf(
-            file.toURI().toString()
+            file.toURI().toString() + "?timestamp=${System.currentTimeMillis()}"
         )
     }
 
@@ -89,21 +130,9 @@ fun ProfileScreen(
         }
 
 
-        val pickMedia =
-            rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-                if (uri != null) {
-                    resolver.openInputStream(uri).use { stream ->
-                        val outputStream = file.outputStream()
-                        stream?.copyTo(outputStream)
-
-                        outputStream.close()
-                        stream?.close()
-                    }
-
-                    filePath = file.toURI().toString() + "?timestamp=${System.currentTimeMillis()}"
-                }
-
-            }
+        val pickMedia = pickMedia(resolver, file) {
+            filePath = file.absolutePath + "?timestamp=${System.currentTimeMillis()}"
+        }
 
 
         Column(modifier = Modifier.padding(8.dp)) {
@@ -138,10 +167,60 @@ fun ProfileScreen(
                 label = { Text("Username") },
                 singleLine = true
             )
+
+            Spacer(modifier = Modifier.size(20.dp))
+
+            val requestNotificationPermission = enableNotifications() {
+                // enabled. do something
+            }
+
+            val button = Button(onClick = {}) {
+                Text("Enable notifications")
+            }
+
+
         }
     }
 }
 
+@Composable
+private fun pickMedia(
+    resolver: ContentResolver,
+    file: File,
+    onImagePicked: () -> Unit
+): ManagedActivityResultLauncher<PickVisualMediaRequest, Uri?> {
+    val pickMedia =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            if (uri != null) {
+                resolver.openInputStream(uri).use { stream ->
+                    val outputStream = file.outputStream()
+                    stream?.copyTo(outputStream)
+
+                    outputStream.close()
+                    stream?.close()
+                }
+
+                onImagePicked()
+
+            }
+        }
+
+    return pickMedia
+}
+
+@Composable
+private fun enableNotifications(onAccessGranted: () -> Unit): ManagedActivityResultLauncher<String, Boolean> {
+    val requestPermissionLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                onAccessGranted()
+            }
+        }
+
+    return requestPermissionLauncher
+}
 
 @Preview(showBackground = true)
 @Composable
