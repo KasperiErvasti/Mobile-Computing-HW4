@@ -7,29 +7,32 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.util.Log
 import com.example.mobilecomputinghw4.R
 
-class SensorActivity : Activity(), SensorEventListener {
+class SensorActivity(private val notificationHelper: NotificationHelper) : Activity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var mLight: Sensor? = null
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        setContentView(R.layout.main)
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         mLight = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
     }
 
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
-        // Do something here if sensor accuracy changes.
+        Log.d("MY_TAG", "accuracy")
+//        return
     }
 
-    override fun onSensorChanged(event: SensorEvent) {
-        // The light sensor returns a single value.
-        // Many sensors return 3 values, one for each axis.
-        val lux = event.values[0]
-        // Do something with this sensor value.
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type == Sensor.TYPE_LIGHT) {
+            val lux = event.values[0]
+            if (lux > 10000) {
+                notificationHelper.createNotification("OMG BIG LUX", "LUX IS OVER 10000. WOW. LUX is $lux")
+            }
+        }
     }
 
     override fun onResume() {
@@ -39,8 +42,4 @@ class SensorActivity : Activity(), SensorEventListener {
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        sensorManager.unregisterListener(this)
-    }
 }

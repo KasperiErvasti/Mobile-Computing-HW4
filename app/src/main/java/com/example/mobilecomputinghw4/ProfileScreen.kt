@@ -178,11 +178,17 @@ fun ProfileScreen(
                     ActivityResultContracts.RequestPermission()
                 ) { isGranted: Boolean ->
                     if (isGranted) {
-                        notificationHelper.createNotification("TEST PROFILE", "DASDSAL")
+                        notificationHelper.createNotification(
+                            "Notifications Enabled",
+                            "You will be notified when the device senses over 10000 lux"
+                        )
                     }
                 }
 
-            Button(onClick = {notificationHelper.requestNotificationPermissions(requestPermissionLauncher)
+            Button(onClick = {
+                notificationHelper.requestNotificationPermissions(
+                    requestPermissionLauncher
+                )
 
             }) {
                 Text("Enable notifications")
@@ -192,7 +198,6 @@ fun ProfileScreen(
         }
     }
 }
-
 
 
 @Composable
