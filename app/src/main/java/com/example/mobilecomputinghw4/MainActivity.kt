@@ -12,7 +12,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.mobilecomputinghw4.sensor.createNotificationChannel
+import com.example.mobilecomputinghw4.sensor.NotificationHelper
 import kotlinx.serialization.Serializable
 import java.io.File
 
@@ -29,9 +29,14 @@ class MainActivity : ComponentActivity() {
                 usernameFile.writeBytes("Hullu".toByteArray())
             }
 
-            AppNavigation(modifier = Modifier.systemBarsPadding())
+            val notificationHelper = NotificationHelper(this)
+            notificationHelper.createNotificationChannel()
 
-            createNotificationChannel(context)
+            AppNavigation(modifier = Modifier.systemBarsPadding(), notificationHelper)
+
+
+
+
         }
     }
 }
@@ -46,6 +51,7 @@ object Profile
 @Composable
 fun AppNavigation(
     modifier: Modifier = Modifier,
+    notificationHelper: NotificationHelper,
     navController: NavHostController = rememberNavController()
 ) {
     NavHost(
@@ -68,7 +74,8 @@ fun AppNavigation(
                             inclusive = true
                         }
                     }
-                }
+                },
+                notificationHelper
             )
 
         }

@@ -27,6 +27,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,12 +48,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.example.mobilecomputinghw4.sensor.NotificationHelper
 import java.io.File
 
 
 @Composable
 fun ProfileScreen(
     onNavigateToChat: () -> Unit,
+    notificationHelper: NotificationHelper
 ) {
     lateinit var sensorManager: SensorManager
 
@@ -170,11 +173,18 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.size(20.dp))
 
-            val requestNotificationPermission = enableNotifications() {
-                // enabled. do something
-            }
+            val requestPermissionLauncher =
+                rememberLauncherForActivityResult(
+                    ActivityResultContracts.RequestPermission()
+                ) { isGranted: Boolean ->
+                    if (isGranted) {
+                        notificationHelper.createNotification("TEST PROFILE", "DASDSAL")
+                    }
+                }
 
-            val button = Button(onClick = {}) {
+            Button(onClick = {notificationHelper.requestNotificationPermissions(requestPermissionLauncher)
+
+            }) {
                 Text("Enable notifications")
             }
 
@@ -182,6 +192,8 @@ fun ProfileScreen(
         }
     }
 }
+
+
 
 @Composable
 private fun pickMedia(
@@ -208,22 +220,4 @@ private fun pickMedia(
     return pickMedia
 }
 
-@Composable
-private fun enableNotifications(onAccessGranted: () -> Unit): ManagedActivityResultLauncher<String, Boolean> {
-    val requestPermissionLauncher =
-        rememberLauncherForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted: Boolean ->
-            if (isGranted) {
-                onAccessGranted()
-            }
-        }
 
-    return requestPermissionLauncher
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewProfileScreen() {
-    ProfileScreen { }
-}
